@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+/* ===========================================================
+   PALETA EDITORIAL PREMIUM DE MAFER — Tailwind v4 (@theme)
+   Rosados sofisticados + acentos champagne / dorado suave.
+   Los tokens se exponen como utilidades: bg-rose-100, text-gold-soft…
+   =========================================================== */
+@theme {
+  --color-rose-50: #fff5f7;
+  --color-rose-100: #fde2e8;
+  --color-rose-200: #fbc7d4;
+  --color-rose-400: #e8829f;
+  --color-rose-600: #c04870;
+  --color-rose-900: #6b1e3a;
+
+  --color-blush-cream: #fff0eb;
+  --color-champagne: #f5e6d3;
+  --color-gold-soft: #d4af7f;
+
+  /* Tipografía: consume las CSS vars que inyecta next/font */
+  --font-display: var(--ff-display), "Cormorant Garamond", Georgia, serif;
+  --font-body: var(--ff-body), "Quicksand", "Segoe UI", system-ui, sans-serif;
+  --font-script: var(--ff-script), "Caveat", cursive;
+}
+
+:root {
+  --foreground: #6b1e3a;
+}
+
+body {
+  color: var(--foreground);
+  font-family: var(--font-body);
+  /* El fondo continuo vive en <GlobalBackground/> (fixed). El body es
+     transparente para que ese degradado se vea de Hero a Footer. */
+  background: transparent;
+  overflow-x: hidden;
+}
+
+/* Titulares editoriales */
+.font-display {
+  font-family: var(--font-display);
+}
+.font-script {
+  font-family: var(--font-script);
+}
+
+/* ===========================================================
+   KEYFRAMES GLOBALES
+   =========================================================== */
+
+/* Flotar suavemente */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+
+/* Polvo dorado/rosado del fondo subiendo lentamente */
+@keyframes dustDrift {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: var(--dust-opacity, 0.5); }
+  90% { opacity: var(--dust-opacity, 0.5); }
+  100% { transform: translateY(-110vh) translateX(var(--drift, 20px)); opacity: 0; }
+}
+
+/* Brillo / shimmer dorado que cruza una superficie */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Humo de las velas ondulando hacia arriba */
+@keyframes smokeRise {
+  0% { transform: translateY(0) scale(0.6); opacity: 0.5; }
+  100% { transform: translateY(-70px) scale(1.7); opacity: 0; }
+}
+
+/* Rebote suave (scroll indicator) */
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+/* Shake para login incorrecto */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-9px); }
+  40% { transform: translateX(9px); }
+  60% { transform: translateX(-7px); }
+  80% { transform: translateX(7px); }
+}
+
+/* Ondas de sonido del botón de música */
+@keyframes soundWave {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.3); opacity: 0; }
+}
+
+/* Cola de las mascotas */
+@keyframes tailWag {
+  0% { transform: rotate(-14deg); }
+  100% { transform: rotate(14deg); }
+}
+
+/* Orejas de los gatitos */
+@keyframes earWiggle {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* Parpadeo de ojos de mascotas */
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+/* Estrellas místicas titilando (sección Tarot) */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Pulso suave (ícono de corazón del footer) */
+@keyframes pulseSoft {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
+/* Llama de vela: morph orgánico del path */
+@keyframes flameDance {
+  0%, 100% { transform: scaleY(1) scaleX(1) translateY(0); }
+  25% { transform: scaleY(1.08) scaleX(0.94) translateY(-1px); }
+  50% { transform: scaleY(0.95) scaleX(1.05) translateY(1px); }
+  75% { transform: scaleY(1.05) scaleX(0.97) translateY(-1px); }
+}
+
+/* ===========================================================
+   UTILIDADES DE ANIMACIÓN
+   =========================================================== */
+.animate-float { animation: float 5s ease-in-out infinite; }
+.animate-bounce-soft { animation: bounce-soft 1.8s ease-in-out infinite; }
+.animate-twinkle { animation: twinkle 2.8s ease-in-out infinite; }
+.animate-pulse-soft { animation: pulseSoft 2.4s ease-in-out infinite; }
+
+/* Texto con shimmer dorado champagne */
+.shimmer-gold {
+  background: linear-gradient(90deg, #d4af7f, #f5e6d3, #e8829f, #d4af7f);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+
+/* Tracking generoso para titulares editoriales */
+.tracking-editorial { letter-spacing: 0.08em; }
+
+/* Scrollbar refinada */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #fde2e8; }
+::-webkit-scrollbar-thumb {
+  background: #e8829f;
+  border-radius: 999px;
+  border: 3px solid #fde2e8;
+}
+
+/* Respeto a usuarios que prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
