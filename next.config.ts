@@ -5,9 +5,16 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
-  // Permitimos cargar las fotos placeholder de picsum.photos
+  // Imágenes externas permitidas:
+  //   • Supabase Storage → fotos reales subidas al bucket público
+  //   • picsum.photos     → placeholders durante el desarrollo
   images: {
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pfzhdcjpshjtqhuiaeby.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
       {
         protocol: "https",
         hostname: "picsum.photos",

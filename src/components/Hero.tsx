@@ -12,7 +12,7 @@ import { Flourish, GeminiGlyph } from "./SVGIcons";
 // cargar. Los globos son SVG con volumen; el fondo es el global.
 // =====================================================================
 
-const TITLE = "Feliz Cumpleaños, Mafer";
+const TITLE = "Happy Birthday, Mafer";
 
 // Máximo 5 globos · paleta refinada (rose-200, champagne, gold-soft)
 const BALLOONS = [
@@ -32,19 +32,21 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 text-center">
+    <section className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-hidden px-5 text-center">
       {/* Fuegos artificiales reales (8.5s y luego se calman) */}
       <Fireworks trigger={showFireworks} duration={8500} />
 
-      {/* Globos SVG con volumen, flotando suavemente */}
+      {/* Globos SVG con volumen, flotando suavemente.
+          En mobile solo mostramos 3 (los 2 últimos se ocultan). */}
       {BALLOONS.map((b, i) => (
-        <Balloon key={i} {...b} />
+        <Balloon key={i} {...b} hideOnMobile={i >= 3} />
       ))}
 
       {/* Contenido central */}
       <div className="relative z-10 flex flex-col items-center">
         <h1
-          className="font-display text-5xl italic text-rose-900 tracking-editorial sm:text-7xl"
+          className="font-display italic text-rose-900 tracking-editorial"
+          style={{ fontSize: "clamp(2rem, 8vw, 4rem)" }}
           aria-label={TITLE}
         >
           {TITLE.split("").map((ch, i) => (
@@ -70,52 +72,43 @@ export default function Hero() {
         >
           <Flourish width={150} className="text-gold-soft/70" />
           <p className="font-body text-xl font-light tracking-wide text-rose-600 sm:text-2xl">
-            Veintisiete años de ser única
+            Twenty-seven years of being one of a kind
           </p>
           <Flourish width={150} className="rotate-180 text-gold-soft/70" />
         </motion.div>
 
         {/* Mención sutil a Géminis */}
         <motion.div
-          className="mt-6 flex items-center gap-3 text-sm font-light tracking-[0.2em] text-rose-400 uppercase"
+          className="eyebrow mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-2 text-sm font-light text-rose-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2.2, duration: 1 }}
         >
-          <span>Veintisiete años</span>
-          <span className="text-gold-soft/60">·</span>
-          <span>10 de junio</span>
-          <span className="text-gold-soft/60">·</span>
+          <span>June 10, 1999</span>
+          <span className="text-gold-soft">·</span>
           <span className="flex items-center gap-1.5">
             <GeminiGlyph size={15} className="text-gold-soft" />
-            Géminis
+            Gemini
           </span>
         </motion.div>
       </div>
 
-      {/* Indicador de scroll */}
+      {/* Indicador de scroll: línea vertical fina que se alarga y contrae */}
       <motion.div
         className="absolute bottom-10 z-10 flex flex-col items-center text-rose-400"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.8, duration: 1 }}
       >
-        <span className="mb-2 text-xs font-light tracking-[0.25em] uppercase">
-          Desliza para celebrar
+        <span className="eyebrow mb-3 text-xs font-light text-rose-400">
+          Scroll to celebrate
         </span>
-        <svg
-          className="animate-bounce-soft"
-          width="26"
-          height="26"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        <span className="relative block h-12 w-px overflow-hidden bg-rose-200/50">
+          <span
+            className="absolute inset-x-0 top-0 h-full w-px bg-gradient-to-b from-gold-soft to-rose-400"
+            style={{ animation: "scrollLine 2.2s ease-in-out infinite" }}
+          />
+        </span>
       </motion.div>
     </section>
   );
@@ -129,6 +122,7 @@ function Balloon({
   size,
   delay,
   dur,
+  hideOnMobile,
 }: {
   color: string;
   highlight: string;
@@ -136,11 +130,12 @@ function Balloon({
   size: number;
   delay: number;
   dur: number;
+  hideOnMobile?: boolean;
 }) {
   const gid = `balloon-${left}-${size}`;
   return (
     <motion.div
-      className="pointer-events-none absolute z-0"
+      className={`pointer-events-none absolute z-0 ${hideOnMobile ? "hidden sm:block" : ""}`}
       style={{ left: `${left}%`, top: `${12 + (size % 7) * 2}%`, width: size }}
       initial={{ y: 0, rotate: -2 }}
       animate={{ y: [0, -18, 0], rotate: [-2, 2, -2] }}

@@ -28,30 +28,33 @@ import { supabase, type GalleryPhoto } from "@/lib/supabase";
 // puede reemplazar, editar caption, eliminar y agregar fotos.
 // =====================================================================
 
-const TAPE_COLORS = { rose: "#FBC7D4", champagne: "#F5E6D3" };
 const MAX_BYTES = 5 * 1024 * 1024;
 const COMPRESS_THRESHOLD = 1024 * 1024;
 const MAX_WIDTH = 1200;
 
-// Rotación / cinta deterministas por índice (look polaroid)
+// Rotación deterministas por índice (look polaroid)
 const ROTATIONS = [-4, 3, -2, 4, -3, 2];
-const TAPES: ("rose" | "champagne" | null)[] = [
-  "rose",
+
+// Cintas washi: 3 estilos distintos (rayas, lunares, liso dorado) que se
+// alternan; algunas fotos quedan sin cinta para que no se vea repetitivo.
+type TapeStyle = { color: string; variant: 0 | 1 | 2 } | null;
+const TAPES: TapeStyle[] = [
+  { color: "#FBC7D4", variant: 0 },
   null,
-  "champagne",
-  null,
-  "rose",
+  { color: "#F5E6D3", variant: 1 },
+  { color: "#D4AF7F", variant: 2 },
+  { color: "#FBC7D4", variant: 1 },
   null,
 ];
 
 // Placeholders mostrados cuando aún no hay fotos reales.
 const PLACEHOLDER_CAPTIONS = [
-  "Siempre brillando",
-  "La más linda del lugar",
-  "Pura magia",
-  "Sonrisa que ilumina",
-  "Reina del cumpleaños",
-  "Inolvidable, como siempre",
+  "Always shining",
+  "The prettiest in the room",
+  "Pure magic",
+  "A smile that lights up the room",
+  "Birthday queen",
+  "Unforgettable, as always",
 ];
 
 const PLACEHOLDERS: GalleryPhoto[] = PLACEHOLDER_CAPTIONS.map((caption, i) => ({
@@ -127,14 +130,30 @@ export default function Gallery() {
   };
 
   // Carga inicial (estado manual sin realtime; fetchPhotos se vuelve
-  // a llamar tras cada delete/insert/update desde onDone).
+  // a llamar tras cada delete/insert/update desde onDone). El setState
+  // ocurre tras un await, así que no dispara renders en cascada.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState asíncrono tras fetch
     fetchPhotos();
   }, []);
 
+  // Bloquea el scroll del body mientras hay lightbox o modal abierto
+  // (evita el scroll fantasma detrás del overlay en móvil).
+  useEffect(() => {
+    const open = active !== null || editingId !== null;
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [active, editingId]);
+
   const hasReal = photos.length > 0;
   const displayed = hasReal ? photos : PLACEHOLDERS;
-  const showAddTile = isAdmin && photos.length < 6;
+  // El admin siempre puede agregar fotos (sin tope), incluso sobre los
+  // placeholders cuando la galería aún está vacía.
+  const showAddTile = isAdmin;
 
   const openCreate = () => {
     setUploadingNew(true);
@@ -147,12 +166,12 @@ export default function Gallery() {
       : null;
 
   return (
-    <section className="relative w-full px-4 py-24">
+    <section className="relative w-full px-5 py-16 sm:py-24">
       {/* Badge modo admin */}
       {isAdmin && (
-        <div className="absolute left-4 top-6 flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3 py-1 font-body text-xs font-light text-rose-900">
+        <div className="absolute left-4 top-5 z-10 flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-3 py-1 font-body text-xs font-light text-rose-900">
           <ShieldCheck size={13} strokeWidth={1.6} />
-          Modo admin
+          Editing with love
         </div>
       )}
 
@@ -186,14 +205,14 @@ export default function Gallery() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          Momentos de Mafer
+          Mafer&apos;s Moments
         </motion.h2>
         <Flourish width={140} className="mt-4 text-gold-soft/70" />
       </div>
 
       <div
         ref={containerRef}
-        className="mx-auto grid max-w-5xl grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3"
+        className="mx-auto grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-12 md:grid-cols-3"
       >
         {displayed.map((photo, i) => {
           const isPlaceholder = photo.id.startsWith("placeholder-");
@@ -222,7 +241,7 @@ export default function Gallery() {
                     setUploadingNew(false);
                     setEditingId(photo.id);
                   }}
-                  aria-label="Editar foto"
+                  aria-label="Edit photo"
                   className="absolute -right-2 -top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white/70 text-rose-600 opacity-60 shadow transition hover:bg-white hover:opacity-100"
                 >
                   <Edit size={14} strokeWidth={1.6} />
@@ -232,16 +251,18 @@ export default function Gallery() {
               <button
                 type="button"
                 onClick={() => setActive(photo)}
-                className="relative block cursor-pointer rounded-[3px] bg-[#fffdf9] p-3 pb-5"
-                style={{ boxShadow: "0 18px 40px -12px rgba(107,30,58,0.28)" }}
+                className="relative block cursor-pointer rounded-[3px] bg-[#fffdf9] p-3 pb-5 shadow-[0_18px_40px_-12px_rgba(107,30,58,0.28)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:shadow-[0_34px_70px_-12px_rgba(107,30,58,0.45)]"
               >
-                {tape && <WashiTape color={TAPE_COLORS[tape]} flip={i % 2 === 0} />}
-                <div className="relative h-56 w-56 overflow-hidden rounded-[2px]">
+                {tape && (
+                  <WashiTape color={tape.color} variant={tape.variant} flip={i % 2 === 0} />
+                )}
+                <div className="relative h-[68vw] max-h-64 w-[68vw] max-w-64 overflow-hidden rounded-[2px] sm:h-56 sm:w-56">
                   {photo.foto_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photo.foto_url}
-                      alt={photo.caption ?? "Foto de Mafer"}
+                      alt={photo.caption ?? "Photo of Mafer"}
+                      loading="lazy"
                       className="h-full w-full object-cover transition-[filter] duration-500 group-hover:[filter:saturate(1.12)]"
                     />
                   ) : (
@@ -254,12 +275,14 @@ export default function Gallery() {
                 <p className="font-script mt-3 text-center text-2xl text-rose-600">
                   {photo.caption}
                 </p>
+                {/* línea decorativa mini bajo el caption */}
+                <Flourish width={54} className="mx-auto mt-1 text-gold-soft/60" />
               </button>
             </motion.div>
           );
         })}
 
-        {/* Polaroid para agregar (solo admin, si hay menos de 6) */}
+        {/* Polaroid para agregar (solo admin, siempre disponible) */}
         {showAddTile && (
           <motion.button
             type="button"
@@ -272,7 +295,7 @@ export default function Gallery() {
           >
             <Plus size={40} strokeWidth={1.4} />
             <span className="font-body text-sm font-light tracking-wide">
-              Agregar foto
+              Add photo
             </span>
           </motion.button>
         )}
@@ -282,8 +305,8 @@ export default function Gallery() {
       <AnimatePresence>
         {active && active.foto_url && (
           <motion.div
-            className="fixed inset-0 z-[90] flex items-center justify-center p-4"
-            style={{ background: "rgba(40,10,30,0.7)", backdropFilter: "blur(8px)" }}
+            className="fixed inset-0 z-[90] flex items-center justify-center p-4 backdrop-blur-2xl"
+            style={{ background: "rgba(107,30,58,0.5)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -291,13 +314,13 @@ export default function Gallery() {
           >
             <button
               onClick={() => setActive(null)}
-              aria-label="Cerrar"
-              className="absolute right-6 top-5 text-white/90 transition-transform hover:scale-110"
+              aria-label="Close"
+              className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-transform hover:scale-110"
             >
-              <X size={32} strokeWidth={1.5} />
+              <X size={28} strokeWidth={1.5} />
             </button>
             <motion.div
-              className="rounded-md bg-[#fffdf9] p-4 pb-7"
+              className="rounded-md bg-[#fffdf9] p-3 pb-6 sm:p-4 sm:pb-7"
               style={{ boxShadow: "0 30px 60px rgba(107,30,58,0.5)" }}
               initial={{ scale: 0.7, y: 30 }}
               animate={{ scale: 1, y: 0 }}
@@ -305,17 +328,19 @@ export default function Gallery() {
               transition={{ type: "spring", stiffness: 220, damping: 22 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative h-[60vh] max-h-[420px] w-[80vw] max-w-[420px] overflow-hidden rounded">
+              <div className="relative h-[62vh] max-h-[440px] w-[86vw] max-w-[420px] overflow-hidden rounded">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={active.foto_url}
-                  alt={active.caption ?? "Foto de Mafer"}
+                  alt={active.caption ?? "Photo of Mafer"}
+                  loading="lazy"
                   className="h-full w-full object-cover"
                 />
               </div>
               <p className="font-script mt-3 text-center text-3xl text-rose-600">
                 {active.caption}
               </p>
+              <Flourish width={70} className="mx-auto mt-1 text-gold-soft/60" />
             </motion.div>
           </motion.div>
         )}
@@ -339,14 +364,14 @@ export default function Gallery() {
               showToast(message, "success");
               fetchPhotos();
             }}
-            onError={() => showToast("Algo salió mal, intenta de nuevo", "error")}
+            onError={() => showToast("Something went wrong, try again", "error")}
           />
         )}
       </AnimatePresence>
 
       {loading && photos.length === 0 && (
-        <p className="mt-10 text-center font-body text-sm font-light text-rose-300">
-          Cargando momentos...
+        <p className="mt-10 text-center font-body text-sm font-light italic text-rose-300">
+          One moment...
         </p>
       )}
     </section>
@@ -388,11 +413,11 @@ function EditModal({
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("image/")) {
-      setLocalError("El archivo debe ser una imagen.");
+      setLocalError("The file must be an image.");
       return;
     }
     if (f.size > MAX_BYTES) {
-      setLocalError("La imagen supera los 5MB.");
+      setLocalError("The image exceeds 5MB.");
       return;
     }
     setFile(f);
@@ -402,7 +427,7 @@ function EditModal({
   const handleSave = async () => {
     setLocalError(null);
     if (mode === "create" && !file) {
-      setLocalError("Selecciona una foto.");
+      setLocalError("Select a photo.");
       return;
     }
     setBusy(true);
@@ -422,14 +447,14 @@ function EditModal({
           },
         ]);
         if (error) throw error;
-        onDone("Foto agregada");
+        onDone("Photo added");
       } else if (photo) {
         const { error } = await supabase
           .from("gallery_photos")
           .update({ foto_url, caption: caption.trim() || null })
           .eq("id", photo.id);
         if (error) throw error;
-        onDone("Foto actualizada");
+        onDone("Photo updated");
       }
     } catch (err) {
       console.error(err);
@@ -441,7 +466,7 @@ function EditModal({
 
   const handleDelete = async () => {
     if (!photo) return;
-    if (!window.confirm("¿Eliminar esta foto?")) return;
+    if (!window.confirm("Delete this photo?")) return;
     setBusy(true);
     try {
       const { error } = await supabase
@@ -449,7 +474,7 @@ function EditModal({
         .delete()
         .eq("id", photo.id);
       if (error) throw error;
-      onDone("Foto eliminada");
+      onDone("Photo deleted");
     } catch (err) {
       console.error(err);
       onError();
@@ -481,21 +506,21 @@ function EditModal({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Cancelar"
-          className="absolute right-4 top-4 text-rose-400 transition-transform hover:scale-110"
+          aria-label="Cancel"
+          className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full text-rose-400 transition-transform hover:scale-110"
         >
           <X size={20} strokeWidth={1.5} />
         </button>
 
         <h3 className="mb-5 font-display text-2xl italic text-rose-900">
-          {mode === "create" ? "Agregar foto" : "Editar foto"}
+          {mode === "create" ? "Add photo" : "Edit photo"}
         </h3>
 
         {/* Preview */}
         <div className="mx-auto mb-4 h-44 w-44 overflow-hidden rounded-xl border border-rose-200 bg-rose-50">
           {previewSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={previewSrc} alt="Vista previa" className="h-full w-full object-cover" />
+            <img src={previewSrc} alt="Preview" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-rose-300">
               <Plus size={32} strokeWidth={1.4} />
@@ -515,7 +540,7 @@ function EditModal({
           onClick={() => fileRef.current?.click()}
           className="mb-4 w-full rounded-xl border border-dashed border-rose-300 bg-rose-50/40 px-4 py-2.5 font-body text-sm font-light text-rose-400 transition hover:bg-rose-50"
         >
-          {mode === "create" ? "Elegir foto" : "Reemplazar foto"}
+          {mode === "create" ? "Choose photo" : "Replace photo"}
         </button>
 
         <input
@@ -543,7 +568,7 @@ function EditModal({
           ) : (
             <Save size={17} strokeWidth={1.5} />
           )}
-          Guardar cambios
+          Save changes
         </button>
 
         {mode === "edit" && (
@@ -554,7 +579,7 @@ function EditModal({
             className="flex w-full items-center justify-center gap-2 rounded-full border border-rose-200 bg-transparent px-6 py-2.5 font-body text-sm font-light text-rose-600 transition-colors duration-300 hover:bg-rose-50 disabled:opacity-70"
           >
             <Trash2 size={15} strokeWidth={1.5} />
-            Eliminar foto
+            Delete photo
           </button>
         )}
       </motion.div>
@@ -562,8 +587,16 @@ function EditModal({
   );
 }
 
-// --- Cinta washi decorativa (SVG con bordes irregulares) ---
-function WashiTape({ color, flip }: { color: string; flip: boolean }) {
+// --- Cinta washi decorativa: 3 estilos (rayas / lunares / liso dorado) ---
+function WashiTape({
+  color,
+  flip,
+  variant,
+}: {
+  color: string;
+  flip: boolean;
+  variant: 0 | 1 | 2;
+}) {
   return (
     <svg
       width="78"
@@ -578,9 +611,23 @@ function WashiTape({ color, flip }: { color: string; flip: boolean }) {
     >
       <path d="M2 6 L76 2 L74 24 L4 28 Z" fill={color} />
       <path d="M2 6 L76 2 L74 24 L4 28 Z" fill="#FFFFFF" opacity="0.18" />
-      {[14, 28, 42, 56].map((x) => (
-        <line key={x} x1={x} y1="3" x2={x - 6} y2="27" stroke="#FFFFFF" strokeWidth="1" opacity="0.25" />
-      ))}
+      {/* variante 0: rayas diagonales */}
+      {variant === 0 &&
+        [14, 28, 42, 56].map((x) => (
+          <line key={x} x1={x} y1="3" x2={x - 6} y2="27" stroke="#FFFFFF" strokeWidth="1" opacity="0.3" />
+        ))}
+      {/* variante 1: lunares */}
+      {variant === 1 &&
+        [16, 30, 44, 58].map((x, i) => (
+          <circle key={x} cx={x} cy={i % 2 ? 11 : 17} r="2.1" fill="#FFFFFF" opacity="0.35" />
+        ))}
+      {/* variante 2: liso con doble línea central dorada/clara */}
+      {variant === 2 && (
+        <>
+          <line x1="6" y1="11" x2="72" y2="8" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.4" />
+          <line x1="6" y1="19" x2="72" y2="16" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.4" />
+        </>
+      )}
     </svg>
   );
 }

@@ -8,7 +8,10 @@ import PetsSection from "@/components/PetsSection";
 import TarotReading from "@/components/TarotReading";
 import Letter from "@/components/Letter";
 import MessageWall from "@/components/MessageWall";
-import MusicButton from "@/components/MusicButton";
+import AuthButton from "@/components/AuthButton";
+import SparkleCursor from "@/components/SparkleCursor";
+import ScrollProgress from "@/components/ScrollProgress";
+import PageCurtain from "@/components/PageCurtain";
 import Footer from "@/components/Footer";
 
 // =====================================================================
@@ -20,6 +23,10 @@ import Footer from "@/components/Footer";
 export default function Home() {
   return (
     <AuthProvider>
+      {/* Telón de entrada + barra de progreso de scroll */}
+      <PageCurtain />
+      <ScrollProgress />
+
       {/* Fondo único + partículas + grano para todo el sitio */}
       <GlobalBackground />
 
@@ -34,9 +41,10 @@ export default function Home() {
         <Footer />
       </main>
 
-      {/* Botón flotante de música + modal de login (sobre todo el sitio) */}
-      <MusicButton />
+      {/* Botones flotantes (sesión) + modal de login + cursor */}
+      <AuthButton />
       <LoginModal />
+      <SparkleCursor />
     </AuthProvider>
   );
 }

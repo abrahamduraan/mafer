@@ -22,41 +22,48 @@ interface TarotCard {
 
 const CARDS: TarotCard[] = [
   {
-    position: "El Pasado",
-    name: "La Estrella",
+    position: "The Past",
+    name: "The Star",
     numeral: "XVII",
     message:
-      "Mafer, cada paso del camino que te trajo hasta hoy tuvo un propósito. Las noches difíciles te enseñaron a brillar con luz propia, y las alegrías pequeñas se convirtieron en raíces. Nada de lo que viviste fue en vano: todo te estaba preparando para este momento.",
+      "Mafer, every step of the path that brought you here had a purpose. The hard nights taught you to shine with your own light, and the small joys grew into roots. Nothing you lived through was in vain: it was all preparing you for this moment.",
     art: <StarArt />,
   },
   {
-    position: "El Presente",
-    name: "El Sol",
+    position: "The Present",
+    name: "The Sun",
     numeral: "XIX",
     message:
-      "Hoy eres luz. No prestada, no reflejada: tuya. El universo se detiene un segundo para celebrar que existes. Estás exactamente donde tienes que estar, y todo lo que tocas se vuelve más cálido. Permítete sentir esta felicidad sin medirla.",
+      "Today you are light. Not borrowed, not reflected: your own. The universe pauses for a second to celebrate that you exist. You are exactly where you're meant to be, and everything you touch grows warmer. Let yourself feel this happiness without measuring it.",
     art: <SunArt />,
   },
   {
-    position: "El Futuro",
-    name: "El As de Copas",
-    numeral: "As",
+    position: "The Future",
+    name: "The Ace of Cups",
+    numeral: "Ace",
     message:
-      "Lo que viene es amor que no esperabas, abundancia que llega sin esfuerzo, y reencuentros con quien fuiste antes de aprender a tener miedo. Este año te trae bendiciones que ni siquiera sabías que estabas pidiendo. Ábrete, Mafer: el universo conspira a tu favor.",
+      "What's coming is love you didn't expect, abundance that arrives effortlessly, and reunions with who you were before you learned to be afraid. This year brings you blessings you didn't even know you were asking for. Open up, Mafer: the universe is conspiring in your favor.",
     art: <CupArt />,
   },
 ];
 
 const GOLD = "#D4AF7F";
 
+const FINAL_MESSAGE =
+  "The universe blesses you today and every day, Mafer. May this year bring love, abundance, and everything your soul deserves.";
+
 export default function TarotReading() {
   const { isMafer } = useAuth();
   const [revealed, setRevealed] = useState<boolean[]>([false, false, false]);
+  const [flash, setFlash] = useState(false);
   const allRevealed = isMafer && revealed.every(Boolean);
 
   const reveal = (i: number) => {
     if (!isMafer) return;
     setRevealed((prev) => prev.map((v, idx) => (idx === i ? true : v)));
+    // Las estrellas del fondo se intensifican un instante al revelar
+    setFlash(true);
+    setTimeout(() => setFlash(false), 1300);
   };
 
   // Lluvia suave de estrellas doradas al revelar las 3
@@ -82,32 +89,40 @@ export default function TarotReading() {
   }, [allRevealed]);
 
   return (
-    <section className="relative isolate w-full overflow-hidden px-4 py-24">
+    <section className="relative isolate w-full overflow-hidden px-5 py-16 sm:py-24">
       {/* Fondo oscuro místico (excepción al fondo global) */}
       <div
         className="absolute inset-0 z-0"
         style={{ background: "linear-gradient(160deg, #1a0b1f, #2d1338 55%, #1a0b1f)" }}
       />
       <MysticSky />
+      {/* Destello de estrellas al revelar una carta */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{ background: "radial-gradient(circle at 50% 40%, rgba(212,175,127,0.22), transparent 60%)" }}
+        animate={{ opacity: flash ? 1 : 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      />
 
       {/* Encabezado */}
       <div className="relative z-10 mb-3 flex flex-col items-center text-center">
         <h2 className="font-display text-4xl italic tracking-editorial sm:text-5xl" style={{ color: GOLD }}>
-          Tu Lectura de Cumpleaños
+          Your Birthday Reading
         </h2>
         <p className="mt-4 font-body text-base font-light tracking-wide text-rose-100/80">
-          Tres cartas elegidas por el universo solo para ti
+          Three cards chosen by the universe just for you
         </p>
         {!isMafer && (
-          <p className="mt-5 flex items-center gap-2 font-body text-sm font-light tracking-wide text-rose-200/70">
+          <p className="mt-5 flex items-center gap-2 font-display text-base italic text-gold-soft/80">
             <Lock size={15} strokeWidth={1.5} />
-            Esta lectura es solo para Mafer
+            This reading is only for Mafer
           </p>
         )}
       </div>
 
       {/* Cartas */}
-      <div className="relative z-10 mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-12 sm:grid-cols-3">
+      <div className="relative z-10 mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
         {CARDS.map((card, i) => {
           const isRevealed = isMafer && revealed[i];
           return (
@@ -118,19 +133,16 @@ export default function TarotReading() {
 
               <div className="[perspective:1400px]">
                 <motion.div
-                  className="relative h-[22rem] w-56 [transform-style:preserve-3d]"
+                  className="relative h-[24rem] w-[min(18rem,80vw)] [transform-style:preserve-3d] sm:h-[22rem] sm:w-56"
                   animate={{ rotateY: isRevealed ? 180 : 0 }}
                   transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  {/* Reverso */}
+                  {/* Reverso — diseño premium completo para todos (sin
+                      overlays de bloqueo; lo único privado es la revelación) */}
                   <div className="absolute inset-0 [backface-visibility:hidden]">
                     <CardShell>
                       <CardBack />
                     </CardShell>
-                    {/* Overlay de bloqueo cuando no es Mafer */}
-                    {!isMafer && (
-                      <div className="absolute inset-0 rounded-2xl bg-[#1a0b1f]/30 backdrop-blur-[2px]" />
-                    )}
                   </div>
 
                   {/* Frente */}
@@ -146,7 +158,7 @@ export default function TarotReading() {
                       <span className="font-display text-xl italic" style={{ color: GOLD }}>
                         {card.name}
                       </span>
-                      <p className="mt-2 px-1 font-body text-[0.72rem] leading-relaxed text-rose-50/90">
+                      <p className="mt-2 px-1 font-body text-[0.82rem] leading-relaxed text-rose-50/90 sm:text-[0.72rem]">
                         {card.message}
                       </p>
                     </CardShell>
@@ -158,18 +170,18 @@ export default function TarotReading() {
 
               {/* Acceso */}
               {!isMafer ? (
-                <p className="mt-5 flex items-center gap-2 font-body text-xs font-light tracking-wide text-rose-200/60">
+                <p className="mt-5 flex items-center gap-2 font-display text-sm italic text-gold-soft/70">
                   <Lock size={13} strokeWidth={1.5} />
-                  Lectura privada
+                  Only Mafer can reveal this card
                 </p>
               ) : (
                 <button
                   onClick={() => reveal(i)}
                   disabled={revealed[i]}
-                  className="mt-5 rounded-full border px-6 py-2 font-body text-sm font-light tracking-wide transition-colors duration-300 enabled:hover:bg-[#D4AF7F]/15 disabled:opacity-40"
+                  className="mt-5 w-full max-w-[18rem] rounded-full border px-6 py-3 font-body text-sm font-light tracking-wide transition-colors duration-300 enabled:hover:bg-[#D4AF7F]/15 disabled:opacity-40 sm:w-auto sm:py-2.5"
                   style={{ borderColor: GOLD, color: GOLD }}
                 >
-                  {revealed[i] ? "Revelada" : "Revelar"}
+                  {revealed[i] ? "Revealed" : "Reveal"}
                 </button>
               )}
             </div>
@@ -177,18 +189,27 @@ export default function TarotReading() {
         })}
       </div>
 
-      {/* Mensaje final */}
+      {/* Mensaje final: aparece palabra por palabra */}
       <AnimatePresence>
         {allRevealed && (
           <motion.p
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2 }}
-            className="relative z-10 mx-auto mt-14 max-w-2xl rounded-3xl border p-7 text-center font-display text-xl italic leading-relaxed"
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 mx-auto mt-14 max-w-2xl rounded-3xl border p-6 text-center font-display text-lg italic leading-loose sm:p-8 sm:text-xl"
             style={{ borderColor: `${GOLD}66`, color: GOLD, background: "rgba(255,255,255,0.04)" }}
           >
-            El universo te bendice hoy y todos los días, Mafer. Que este año
-            traiga amor, abundancia y todo lo que tu alma merece.
+            {FINAL_MESSAGE.split(" ").map((word, i) => (
+              <motion.span
+                key={i}
+                className="inline-block"
+                initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ delay: 0.4 + i * 0.09, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {word}&nbsp;
+              </motion.span>
+            ))}
           </motion.p>
         )}
       </AnimatePresence>
@@ -196,24 +217,35 @@ export default function TarotReading() {
   );
 }
 
-// --- Cáscara de carta: borde dorado + ornamentos en las esquinas ---
+// --- Cáscara de carta: borde dorado con shimmer + ornamentos ---
 function CardShell({ children, front }: { children: ReactNode; front?: boolean }) {
   return (
+    // Capa exterior: borde dorado animado (gradiente que se desliza lento)
     <div
-      className="relative flex h-full w-full flex-col items-center justify-center rounded-2xl p-4 text-center"
+      className="relative h-full w-full rounded-2xl p-px"
       style={{
-        border: `1px solid ${GOLD}`,
-        background: front
-          ? "linear-gradient(180deg, #241038, #160a22)"
-          : "linear-gradient(180deg, #1f0d2e, #15081f)",
-        boxShadow: `0 0 24px rgba(212,175,127,0.18), inset 0 0 30px rgba(212,175,127,0.06)`,
+        background:
+          "linear-gradient(120deg, #D4AF7F, #F5E6D3, #E8829F, #F5E6D3, #D4AF7F)",
+        backgroundSize: "300% 100%",
+        animation: "goldSweep 7s linear infinite",
+        boxShadow: "0 0 24px rgba(212,175,127,0.18)",
       }}
     >
-      <CornerFlourish className="absolute left-1.5 top-1.5" />
-      <CornerFlourish className="absolute right-1.5 top-1.5 -scale-x-100" />
-      <CornerFlourish className="absolute bottom-1.5 left-1.5 -scale-y-100" />
-      <CornerFlourish className="absolute bottom-1.5 right-1.5 -scale-100" />
-      {children}
+      <div
+        className="relative flex h-full w-full flex-col items-center justify-center rounded-2xl p-4 text-center"
+        style={{
+          background: front
+            ? "linear-gradient(180deg, #241038, #160a22)"
+            : "linear-gradient(180deg, #1f0d2e, #15081f)",
+          boxShadow: "inset 0 0 30px rgba(212,175,127,0.06)",
+        }}
+      >
+        <CornerFlourish className="absolute left-1.5 top-1.5" />
+        <CornerFlourish className="absolute right-1.5 top-1.5 -scale-x-100" />
+        <CornerFlourish className="absolute bottom-1.5 left-1.5 -scale-y-100" />
+        <CornerFlourish className="absolute bottom-1.5 right-1.5 -scale-100" />
+        {children}
+      </div>
     </div>
   );
 }
@@ -299,7 +331,10 @@ function MysticSky() {
       {stars.map((s, i) => (
         <span
           key={i}
-          className="absolute animate-twinkle rounded-full"
+          // En móvil mostramos ~la mitad de las estrellas (mejor rendimiento).
+          className={`absolute animate-twinkle rounded-full ${
+            i >= 32 ? "hidden sm:block" : ""
+          }`}
           style={{
             left: `${s.left}%`,
             top: `${s.top}%`,

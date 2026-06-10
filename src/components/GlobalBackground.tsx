@@ -72,7 +72,10 @@ export default function GlobalBackground() {
       {dust.map((d, i) => (
         <span
           key={i}
-          className="absolute bottom-0 rounded-full"
+          // En móvil mostramos ~la mitad del polvo (menos repintado).
+          className={`absolute bottom-0 rounded-full ${
+            i >= 20 ? "hidden sm:block" : ""
+          }`}
           style={{
             left: `${d.left}%`,
             width: `${d.size}px`,

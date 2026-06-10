@@ -7,7 +7,7 @@ import { Flourish } from "./SVGIcons";
 
 export default function Footer() {
   return (
-    <footer className="flex w-full flex-col items-center gap-4 bg-transparent px-4 py-14 text-center">
+    <footer className="safe-bottom flex w-full flex-col items-center gap-4 bg-transparent px-5 py-14 text-center">
       <Heart
         size={22}
         strokeWidth={1.5}
@@ -15,7 +15,7 @@ export default function Footer() {
       />
       <Flourish width={120} className="text-gold-soft/60" />
       <p className="font-body text-sm font-light tracking-[0.15em] text-rose-600">
-        Hecho con amor para Mafer · 2026
+        Made with love for Mafer · 2026
       </p>
     </footer>
   );

@@ -66,17 +66,17 @@ export default function LoginModal() {
             <button
               type="button"
               onClick={closeLogin}
-              aria-label="Cerrar"
+              aria-label="Close"
               className="absolute right-4 top-4 text-rose-400 transition-transform hover:scale-110"
             >
               <X size={22} strokeWidth={1.5} />
             </button>
 
             <h2 className="font-display text-3xl italic text-rose-900">
-              ¿Eres tú, Mafer?
+              Is that you, Mafer?
             </h2>
             <p className="mb-7 mt-2 font-body text-sm font-light tracking-wide text-rose-400">
-              Inicia sesión para vivir tu celebración completa
+              Log in to experience your full celebration
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,7 +84,7 @@ export default function LoginModal() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Usuario"
+                placeholder="Username"
                 autoComplete="username"
                 className="w-full rounded-xl border border-rose-200 bg-rose-50/60 px-4 py-3 text-center font-body text-rose-900 outline-none transition focus:border-rose-400"
               />
@@ -92,7 +92,7 @@ export default function LoginModal() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Contraseña"
+                placeholder="Password"
                 autoComplete="current-password"
                 className="w-full rounded-xl border border-rose-200 bg-rose-50/60 px-4 py-3 text-center font-body text-rose-900 outline-none transition focus:border-rose-400"
               />
@@ -105,7 +105,7 @@ export default function LoginModal() {
                     exit={{ opacity: 0, height: 0 }}
                     className="font-body text-sm font-light text-rose-600"
                   >
-                    Esta celebración es solo para Mafer
+                    This celebration is only for Mafer
                   </motion.p>
                 )}
               </AnimatePresence>
@@ -116,7 +116,7 @@ export default function LoginModal() {
                 whileTap={{ scale: 0.97 }}
                 className="w-full rounded-full border border-rose-400 bg-rose-100 px-6 py-3 font-body text-base font-light tracking-wide text-rose-600 transition-colors duration-300 hover:bg-rose-200"
               >
-                Soy yo
+                It&apos;s me
               </motion.button>
             </form>
           </motion.div>

@@ -21,10 +21,25 @@
   --font-display: var(--ff-display), "Cormorant Garamond", Georgia, serif;
   --font-body: var(--ff-body), "Quicksand", "Segoe UI", system-ui, sans-serif;
   --font-script: var(--ff-script), "Caveat", cursive;
+
+  /* Sombras premium en tinta rosa (no negro plano) → utilidades shadow-*.
+     Apiladas en varias capas para profundidad suave de agencia de lujo. */
+  --shadow-soft-sm: 0 2px 4px rgba(190, 24, 93, 0.06), 0 1px 2px rgba(190, 24, 93, 0.04);
+  --shadow-soft-md: 0 4px 8px rgba(190, 24, 93, 0.08), 0 8px 16px rgba(190, 24, 93, 0.06);
+  --shadow-soft-lg: 0 8px 16px rgba(190, 24, 93, 0.1), 0 16px 32px rgba(190, 24, 93, 0.08), 0 30px 60px rgba(190, 24, 93, 0.06);
+  --shadow-soft-xl: 0 16px 32px rgba(190, 24, 93, 0.12), 0 30px 60px rgba(190, 24, 93, 0.1), 0 60px 120px rgba(190, 24, 93, 0.08);
+  --shadow-glow-rose: 0 0 40px rgba(232, 130, 159, 0.3);
+  --shadow-glow-gold: 0 0 40px rgba(212, 175, 127, 0.4);
 }
 
 :root {
   --foreground: #6b1e3a;
+}
+
+html {
+  /* Evita el reajuste automático de tamaño de fuente en iOS al rotar. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -34,6 +49,53 @@ body {
      transparente para que ese degradado se vea de Hero a Footer. */
   background: transparent;
   overflow-x: hidden;
+}
+
+/* ===========================================================
+   FIXES MOBILE GLOBALES
+   =========================================================== */
+
+/* Sin overflow horizontal en ninguna pantalla. */
+html,
+body {
+  max-width: 100%;
+}
+
+/* Quita el flash gris/azul feo al tocar elementos en móviles. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS hace zoom automático al enfocar un input con font-size < 16px.
+   Forzamos 16px mínimo en todos los campos de formulario. */
+input,
+textarea,
+select {
+  font-size: max(16px, 1rem);
+}
+
+/* Imágenes siempre fluidas: nunca rompen el layout horizontal. */
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+/* Utilidad para respetar las safe-areas del iPhone (notch / home bar). */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pb-safe {
+  bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Los estilos :hover solo en dispositivos con cursor real (no en touch,
+   donde quedan "pegados" tras el primer tap). */
+@media (hover: none) {
+  .hover\:scale-105:hover,
+  .group:hover .group-hover\:scale-105 {
+    transform: none;
+  }
 }
 
 /* Titulares editoriales */
@@ -107,10 +169,16 @@ body {
   50% { transform: rotate(5deg); }
 }
 
-/* Parpadeo de ojos de mascotas */
+/* Parpadeo de ojos de mascotas (con doble parpadeo ocasional) */
 @keyframes blink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
+  0%, 40%, 52%, 100% { transform: scaleY(1); }
+  46%, 58% { transform: scaleY(0.08); }
+}
+
+/* Lengüita de los perritos: sale a menudo */
+@keyframes tongue {
+  0%, 45%, 100% { transform: scaleY(0); opacity: 0; }
+  60%, 82% { transform: scaleY(1); opacity: 1; }
 }
 
 /* Estrellas místicas titilando (sección Tarot) */
@@ -133,6 +201,130 @@ body {
   75% { transform: scaleY(1.05) scaleX(0.97) translateY(-1px); }
 }
 
+/* Respiración idle (mascotas, elementos vivos): escala muy sutil */
+@keyframes breath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* Niebla animada sobre las cartas de tarot bloqueadas */
+@keyframes mistDrift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Borde dorado con shimmer lento (cartas de tarot) */
+@keyframes goldSweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Indicador de scroll: línea vertical que se alarga y contrae */
+@keyframes scrollLine {
+  0%, 100% { transform: scaleY(0.3); transform-origin: top; opacity: 0.4; }
+  50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+}
+
+/* Borla del gorrito de fiesta (péndulo suave) */
+@keyframes pompomSwing {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+/* Telón de entrada: el overlay sube y se descorre revelando el sitio */
+@keyframes curtainUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+/* Nombre "Mafer" del telón: entra desde abajo con desenfoque que se asienta */
+@keyframes curtainName {
+  0% { opacity: 0; transform: translateY(24px); filter: blur(10px); }
+  35%, 70% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  100% { opacity: 0; transform: translateY(-12px); filter: blur(4px); }
+}
+
+/* Mascotas — ladeo de cabeza ocasional */
+@keyframes headTilt {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  80% { transform: rotate(-3deg); }
+  90% { transform: rotate(3deg); }
+}
+
+/* Mascotas — saltito periódico */
+@keyframes hopIdle {
+  0%, 82%, 100% { transform: translateY(0); }
+  88% { transform: translateY(-5px); }
+  94% { transform: translateY(0); }
+}
+
+/* Aureola del yorky angelito: gira lento sin parar */
+@keyframes haloSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Aureola del yorky: glow dorado que late */
+@keyframes haloGlow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(212,175,127,0.7)); }
+  50% { filter: drop-shadow(0 0 8px rgba(212,175,127,1)); }
+}
+
+/* Alitas del angelito: aleteo sutil */
+@keyframes wingFlap {
+  0%, 86%, 100% { transform: scaleX(1); }
+  92% { transform: scaleX(0.7); }
+}
+
+/* Lazito del zaguate: vibración entusiasta */
+@keyframes bowJiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+/* Glow dorado constante (yorky angelito completo) */
+@keyframes angelGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(212,175,127,0.45)); }
+  50% { filter: drop-shadow(0 0 14px rgba(212,175,127,0.7)); }
+}
+
+/* Mascotas curiosas (yorky / zaguate): ladeo de cabeza marcado y frecuente */
+@keyframes livelyTilt {
+  0%, 8%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(8deg); }
+  58% { transform: rotate(-6deg); }
+  74% { transform: rotate(5deg); }
+  90% { transform: rotate(0deg); }
+}
+
+/* Mirada lateral: el brillo de los ojos se desplaza a los lados */
+@keyframes eyeLook {
+  0%, 28%, 100% { transform: translateX(0); }
+  42%, 56% { transform: translateX(1.5px); }
+  70%, 84% { transform: translateX(-1.5px); }
+}
+
+/* Wiggle horizontal del cuerpo, ocasional */
+@keyframes bodyWiggle {
+  0%, 62%, 100% { transform: translateX(0); }
+  72% { transform: translateX(-2px); }
+  82% { transform: translateX(2px); }
+  92% { transform: translateX(-1px); }
+}
+
+/* Sonrisa ocasional: una boca más amplia aparece por ~1.5s */
+@keyframes occasionalSmile {
+  0%, 72%, 100% { opacity: 0; }
+  80%, 92% { opacity: 1; }
+}
+
+/* Zaguate olfateando el aire: el hocico se levanta un instante */
+@keyframes sniffUp {
+  0%, 58%, 100% { transform: translateY(0) rotate(0deg); }
+  68%, 82% { transform: translateY(-2px) rotate(-4deg); }
+}
+
 /* ===========================================================
    UTILIDADES DE ANIMACIÓN
    =========================================================== */
@@ -140,6 +332,27 @@ body {
 .animate-bounce-soft { animation: bounce-soft 1.8s ease-in-out infinite; }
 .animate-twinkle { animation: twinkle 2.8s ease-in-out infinite; }
 .animate-pulse-soft { animation: pulseSoft 2.4s ease-in-out infinite; }
+.animate-breath { animation: breath 3.6s ease-in-out infinite; }
+
+/* Eyebrow / kicker: etiquetas pequeñas en versalitas */
+.eyebrow {
+  font-variant: small-caps;
+  letter-spacing: 0.22em;
+}
+
+/* Niebla sobre superficies (cartas bloqueadas) */
+.mist-overlay {
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(212, 175, 127, 0.14) 25%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(212, 175, 127, 0.14) 75%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: mistDrift 7s linear infinite;
+}
 
 /* Texto con shimmer dorado champagne */
 .shimmer-gold {
@@ -151,17 +364,34 @@ body {
   animation: shimmer 5s linear infinite;
 }
 
-/* Tracking generoso para titulares editoriales */
-.tracking-editorial { letter-spacing: 0.08em; }
-
-/* Scrollbar refinada */
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #fde2e8; }
-::-webkit-scrollbar-thumb {
-  background: #e8829f;
-  border-radius: 999px;
-  border: 3px solid #fde2e8;
+/* Variante de alto contraste para números grandes (medallón "27"):
+   tonos dorados más profundos + acento rosa fuerte para que se lea
+   sobre el fondo rosa pálido aunque haya halo detrás. */
+.shimmer-gold-deep {
+  background: linear-gradient(90deg, #a87413, #d4982f, #be185d, #a87413);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 5s linear infinite;
 }
+
+/* Tracking generoso para titulares editoriales */
+.tracking-editorial { letter-spacing: 0.045em; }
+
+/* Selección de texto en tono de la paleta */
+::selection { background: #fbc7d4; color: #6b1e3a; }
+::-moz-selection { background: #fbc7d4; color: #6b1e3a; }
+
+/* Scrollbar fina, rosa suave, sobre track transparente */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(232, 130, 159, 0.55);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(232, 130, 159, 0.8); }
+html { scrollbar-width: thin; scrollbar-color: rgba(232,130,159,0.55) transparent; }
 
 /* Respeto a usuarios que prefieren menos movimiento */
 @media (prefers-reduced-motion: reduce) {

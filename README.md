@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Feliz Cumpleaños Mafer 🎂
 
-## Getting Started
+Un sitio web personal hecho con cariño como regalo de cumpleaños: galería de
+fotos, muro de mensajes, lectura de tarot, mascotas, pastel interactivo y
+música. Sitio privado (no indexado por buscadores).
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) + **React 19**
+- **TypeScript**
+- **Tailwind CSS v4**
+- **Framer Motion** — animaciones
+- **Supabase** — base de datos y almacenamiento de fotos
+- **lucide-react** — iconos
+- **canvas-confetti** — efectos festivos
+
+## Correr localmente
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script          | Descripción                              |
+| --------------- | ---------------------------------------- |
+| `npm run dev`   | Servidor de desarrollo                   |
+| `npm run build` | Build de producción                      |
+| `npm run start` | Sirve el build de producción             |
+| `npm run lint`  | Linting con ESLint                        |
 
-## Learn More
+> Nota: en Next.js 16 el comando `next lint` fue removido; el linting se
+> ejecuta directamente con `eslint`.
 
-To learn more about Next.js, take a look at the following resources:
+## Variables de entorno
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Crea un archivo `.env.local` en la raíz con las siguientes variables
+(los **valores** se obtienen del panel de Supabase, no se commitean):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
 
-## Deploy on Vercel
+`.env.local` está en `.gitignore` — nunca subas las credenciales al repo.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy en Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Importa el repositorio en [Vercel](https://vercel.com/new).
+2. Configura las variables de entorno (`NEXT_PUBLIC_SUPABASE_URL` y
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`) en **Project Settings → Environment Variables**.
+3. Vercel detecta Next.js automáticamente y ejecuta `npm run build`.
+
+### Assets opcionales
+
+- `public/birthday.mp3` — música del botón flotante. Si no existe, el botón
+  no reproduce nada (no rompe el build).
+- `public/og-image.png` — imagen para previews al compartir (1200×630).
+- `src/app/favicon.ico` — reemplázalo por un ícono temático (corazón rosa o
+  estrella dorada) si lo deseas.

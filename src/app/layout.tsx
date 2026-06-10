@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Quicksand, Caveat } from "next/font/google";
 import "./globals.css";
 
@@ -33,9 +33,36 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "Feliz Cumpleaños, Mafer",
-  description:
-    "Una celebración hecha con amor para los veintisiete años de Mafer.",
+  title: "itsmafersbirthday",
+  description: "Un regalo especial para tu día.",
+  openGraph: {
+    title: "Feliz Cumpleaños Mafer",
+    description: "Un regalo especial para tu día.",
+    type: "website",
+    locale: "es_ES",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Feliz Cumpleaños Mafer",
+      },
+    ],
+  },
+  // Sitio privado de cumpleaños: lo mantenemos fuera de los buscadores.
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+// Viewport responsive: ancho del dispositivo, escala inicial 1 y zoom
+// permitido hasta 5x (accesibilidad — no bloqueamos el pinch-to-zoom).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#FFF5F7",
 };
 
 export default function RootLayout({
@@ -45,10 +72,10 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="es"
+      lang="en"
       className={`h-full antialiased ${cormorant.variable} ${quicksand.variable} ${caveat.variable}`}
     >
-      <body className="min-h-full flex flex-col font-body">{children}</body>
+      <body className="flex min-h-[100dvh] flex-col font-body">{children}</body>
     </html>
   );
 }

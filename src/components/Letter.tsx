@@ -11,12 +11,12 @@ import { Flourish } from "./SVGIcons";
 
 const PARAGRAPHS = [
   "Mafer,",
-  "Hay personas que llegan a la vida y la cambian sin proponérselo. Tú eres una de esas.",
-  "No sé cómo lo haces. Tienes la rara capacidad de hacer que los días normales se sientan importantes y que los días difíciles se vuelvan más livianos. Tu risa se queda con uno mucho después de que te has ido del cuarto.",
-  "Hoy cumples veintisiete, y la verdad es que el mundo es mejor porque tú estás en él. Gracias por ser exactamente quien eres: intensa cuando hay que serlo, dulce cuando nadie más se atreve, valiente todos los días aunque a veces no te des cuenta.",
-  "Que este año te regrese todo el amor que repartes sin medida. Que tengas más razones para reír de las que puedas contar. Que cada deseo que pidas hoy al soplar las velas se cumpla, incluso los que no te atreves a decir en voz alta.",
-  "Feliz cumpleaños, Mafer hermosa.",
-  "Te queremos muchísimo.",
+  "There are people who come into your life and change it without even trying. You are one of those.",
+  "I don't know how you do it. You have the rare gift of making ordinary days feel important and hard days feel lighter. Your laughter stays with people long after you've left the room.",
+  "Today you turn twenty-seven, and the truth is the world is better because you're in it. Thank you for being exactly who you are: intense when you need to be, sweet when no one else dares to be, brave every single day even when you don't realize it.",
+  "May this year give you back all the love you give away without measure. May you have more reasons to laugh than you can count. May every wish you make today when you blow out the candles come true, even the ones you don't dare say out loud.",
+  "Happy birthday, beautiful Mafer.",
+  "We love you so much.",
 ];
 
 export default function Letter() {
@@ -31,10 +31,10 @@ export default function Letter() {
   }, [inView]);
 
   return (
-    <section ref={ref} className="relative w-full px-4 py-24">
+    <section ref={ref} className="relative w-full px-5 py-16 sm:py-24">
       <div className="mb-14 flex flex-col items-center">
         <h2 className="font-display text-4xl italic text-rose-900 tracking-editorial sm:text-5xl">
-          Una carta para ti
+          A letter for you
         </h2>
         <Flourish width={140} className="mt-4 text-gold-soft/70" />
       </div>
@@ -59,8 +59,8 @@ export default function Letter() {
             {PARAGRAPHS.map((p, i) => (
               <motion.p
                 key={i}
-                className={`mb-4 leading-relaxed ${
-                  i === 0 ? "text-2xl italic" : "text-lg sm:text-xl"
+                className={`mb-4 leading-[1.85] ${
+                  i === 0 ? "text-2xl italic" : "text-base sm:text-xl"
                 } ${i >= 5 ? "italic text-rose-900" : ""}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={opened ? { opacity: 1, y: 0 } : {}}
@@ -92,9 +92,10 @@ export default function Letter() {
             </motion.div>
           </div>
 
-          {/* Sello de cera */}
+          {/* Sello de cera (con sombra suave debajo para dar volumen) */}
           <motion.div
             className="absolute -bottom-2 right-8 z-20"
+            style={{ filter: "drop-shadow(0 7px 11px rgba(107,30,58,0.38))" }}
             initial={{ scale: 0, rotate: -20 }}
             animate={opened ? { scale: 1, rotate: 0 } : {}}
             transition={{ delay: 1.6 + PARAGRAPHS.length * 0.25, type: "spring", stiffness: 200, damping: 14 }}
@@ -122,12 +123,22 @@ export default function Letter() {
           transition={{ duration: 0.9, ease: "easeInOut" }}
         >
           <div
-            className="mx-auto h-20 w-full"
+            className="relative mx-auto h-20 w-full"
             style={{
-              background: "linear-gradient(180deg, #F6D9DF, #EFC3CC)",
+              background: "linear-gradient(180deg, #F6D9DF, #E7B2BD)",
               clipPath: "polygon(0 0, 100% 0, 50% 100%)",
             }}
-          />
+          >
+            {/* sombra interna que se revela al abrir el flap (look 3D) */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(107,30,58,0.18), transparent 55%)",
+                clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+              }}
+            />
+          </div>
         </motion.div>
       </div>
     </section>

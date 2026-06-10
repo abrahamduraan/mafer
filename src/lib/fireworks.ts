@@ -18,8 +18,15 @@ const FIREWORK_COLORS = [
 // todo el contenido (botón de música, secciones, etc.).
 const Z = 200;
 
+// En móvil reducimos densidad de partículas para evitar lag en equipos
+// modestos (canvas-confetti es costoso con muchas piezas).
+function isMobile(): boolean {
+  return typeof window !== "undefined" && window.innerWidth < 768;
+}
+
 /** Una sola explosión que se expande desde un punto del cielo. */
 export function burst(x: number, y: number) {
+  const mobile = isMobile();
   const base: confetti.Options = {
     origin: { x, y },
     colors: FIREWORK_COLORS,
@@ -31,10 +38,10 @@ export function burst(x: number, y: number) {
   };
 
   // Núcleo amplio + estela de chispas finas para el efecto "trail".
-  confetti({ ...base, particleCount: 90, spread: 360, decay: 0.91 });
+  confetti({ ...base, particleCount: mobile ? 45 : 90, spread: 360, decay: 0.91 });
   confetti({
     ...base,
-    particleCount: 40,
+    particleCount: mobile ? 18 : 40,
     spread: 360,
     startVelocity: 28,
     scalar: 0.7,
@@ -50,7 +57,15 @@ export function burst(x: number, y: number) {
 export function launchFireworks(duration = 9000): () => void {
   if (typeof window === "undefined") return () => {};
 
-  const end = Date.now() + duration;
+  // En móvil el espectáculo no dura más de 6s (evita drenar batería / lag).
+  // Respeta también prefers-reduced-motion: lo acortamos a un único destello.
+  const reduced = window.matchMedia?.(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  const cap = isMobile() ? 6000 : duration;
+  const effectiveDuration = reduced ? 600 : Math.min(duration, cap);
+
+  const end = Date.now() + effectiveDuration;
   let raf = 0;
   let timer = 0;
 
@@ -61,14 +76,24 @@ export function launchFireworks(duration = 9000): () => void {
     const remaining = end - Date.now();
     if (remaining <= 0) return;
 
-    // 1–2 explosiones por tanda en la mitad superior del cielo.
-    const shots = Math.random() > 0.5 ? 2 : 1;
+    // Si la pestaña no está visible, no malgastamos trabajo: reintentamos
+    // más tarde sin disparar explosiones.
+    if (document.visibilityState === "hidden") {
+      timer = window.setTimeout(() => {
+        raf = window.requestAnimationFrame(tick);
+      }, 500);
+      return;
+    }
+
+    // 1–2 explosiones por tanda en la mitad superior del cielo
+    // (solo 1 en móvil para aligerar).
+    const shots = !isMobile() && Math.random() > 0.5 ? 2 : 1;
     for (let s = 0; s < shots; s++) {
       burst(0.12 + Math.random() * 0.76, 0.1 + Math.random() * 0.38);
     }
 
     // A medida que se acaba el tiempo, las tandas se espacian (se calma).
-    const progress = 1 - remaining / duration;
+    const progress = 1 - remaining / effectiveDuration;
     const gap = 420 + progress * 900;
     timer = window.setTimeout(() => {
       raf = window.requestAnimationFrame(tick);

@@ -44,32 +44,32 @@ const PAPERS = [
   { bg: "linear-gradient(180deg,#FBF1DF,#F5E6D3)", border: "#E4CFA8" },
 ];
 
-// --- Fecha relativa en español ("hace 2 horas") ---
+// --- Relative time in English ("2 hours ago") ---
 function relativeTime(iso: string): string {
   const then = new Date(iso).getTime();
   const diff = Date.now() - then;
   if (!Number.isFinite(then)) return "";
   const sec = Math.max(0, Math.floor(diff / 1000));
   const units: [number, string, string][] = [
-    [60, "segundo", "segundos"],
-    [60, "minuto", "minutos"],
-    [24, "hora", "horas"],
-    [30, "día", "días"],
-    [12, "mes", "meses"],
-    [Infinity, "año", "años"],
+    [60, "second", "seconds"],
+    [60, "minute", "minutes"],
+    [24, "hour", "hours"],
+    [30, "day", "days"],
+    [12, "month", "months"],
+    [Infinity, "year", "years"],
   ];
   let value = sec;
   let i = 0;
-  if (value < 60) return "hace unos segundos";
+  if (value < 60) return "a few seconds ago";
   for (; i < units.length; i++) {
     const [size, sing, plur] = units[i];
     if (value < size) {
       const v = Math.floor(value);
-      return `hace ${v} ${v === 1 ? sing : plur}`;
+      return `${v} ${v === 1 ? sing : plur} ago`;
     }
     value = value / size;
   }
-  return "hace un momento";
+  return "a moment ago";
 }
 
 // --- Comprime una imagen con canvas a MAX_WIDTH de ancho ---
@@ -145,16 +145,26 @@ export default function MessageWall() {
     return () => URL.revokeObjectURL(preview);
   }, [preview]);
 
+  // Bloquea el scroll del body mientras el lightbox de foto está abierto.
+  useEffect(() => {
+    if (!lightbox) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [lightbox]);
+
   const onPickFile = (e: ChangeEvent<HTMLInputElement>) => {
     setError(null);
     const f = e.target.files?.[0];
     if (!f) return;
     if (!ALLOWED.includes(f.type)) {
-      setError("Formato no válido. Usa JPG, PNG, WEBP o GIF.");
+      setError("Invalid format. Use JPG, PNG, WEBP or GIF.");
       return;
     }
     if (f.size > MAX_BYTES) {
-      setError("La imagen supera los 5MB.");
+      setError("The image exceeds 5MB.");
       return;
     }
     setFile(f);
@@ -173,7 +183,7 @@ export default function MessageWall() {
     const trimmedNombre = nombre.trim();
     const trimmedMensaje = mensaje.trim();
     if (!trimmedNombre || !trimmedMensaje) {
-      setError("Escribe tu nombre y un mensaje.");
+      setError("Write your name and a message.");
       return;
     }
 
@@ -227,10 +237,10 @@ export default function MessageWall() {
       setMensaje("");
       setPrivacy("public");
       clearFile();
-      showToast("Tu mensaje fue enviado");
+      showToast("Your message arrived");
     } catch (err) {
       console.error("Error en submit:", err);
-      setError("No se pudo enviar tu mensaje. Inténtalo de nuevo.");
+      setError("Your message couldn't be sent. Please try again.");
     } finally {
       setSending(false);
     }
@@ -259,29 +269,29 @@ export default function MessageWall() {
 
     if (delErr) {
       console.error("Error eliminando:", delErr);
-      showToast("No se pudo eliminar el mensaje", "error");
+      showToast("Couldn't delete the message", "error");
       return;
     }
 
     // 3. Actualizar estado local manualmente (sin realtime)
     setMessages((prev) => prev.filter((m) => m.id !== msg.id));
-    showToast("Mensaje eliminado");
+    showToast("Message deleted");
   };
 
   return (
-    <section className="relative w-full px-4 py-24">
-      {/* Toast éxito */}
+    <section className="relative w-full px-5 py-16 sm:py-24">
+      {/* Toast: entra deslizando desde la derecha con acento lateral */}
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            className={`fixed right-5 top-5 z-50 flex items-center gap-2 rounded-full border bg-white/90 px-5 py-3 font-body text-sm shadow-lg backdrop-blur ${
-              toast.type === "error"
-                ? "border-rose-400 text-rose-700"
-                : "border-rose-300 text-rose-700"
+            initial={{ opacity: 0, x: 48 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 48 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className={`fixed right-4 top-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-xl border bg-white/90 py-3 pl-4 pr-5 font-body text-sm text-rose-700 shadow-lg backdrop-blur ${
+              toast.type === "error" ? "border-rose-300" : "border-rose-200"
             }`}
+            style={{ borderLeft: "3px solid #e8829f" }}
           >
             {toast.type === "error" ? (
               <AlertCircle size={16} strokeWidth={2} className="text-rose-500" />
@@ -295,7 +305,7 @@ export default function MessageWall() {
 
       <div className="mb-12 flex flex-col items-center">
         <h2 className="font-display text-4xl italic text-rose-900 tracking-editorial sm:text-5xl">
-          Deja tu mensaje para Mafer
+          Leave a message for Mafer
         </h2>
         <Flourish width={140} className="mt-4 text-gold-soft/70" />
       </div>
@@ -306,25 +316,29 @@ export default function MessageWall() {
         className="relative mx-auto mb-16 max-w-md rounded-2xl border border-rose-200 bg-white/70 p-7 backdrop-blur-sm"
         style={{ boxShadow: "0 18px 40px -16px rgba(192,72,112,0.25)" }}
       >
-        {/* Nombre — border inferior */}
-        <input
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="mb-6 w-full border-0 border-b border-rose-200 bg-transparent px-1 py-2 font-body text-rose-900 outline-none transition focus:border-rose-400"
-          placeholder="Tu nombre"
-        />
+        {/* Nombre — línea inferior que se expande al enfocar */}
+        <div className="group relative mb-6">
+          <input
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            className="peer w-full border-0 border-b border-rose-200 bg-transparent px-1 py-2 font-body text-rose-900 outline-none"
+            placeholder="Your name"
+          />
+          <span className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-rose-400 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] peer-focus:scale-x-100" />
+        </div>
 
         {/* Mensaje + contador */}
-        <textarea
-          value={mensaje}
-          onChange={(e) =>
-            setMensaje(e.target.value.slice(0, MAX_CHARS))
-          }
-          rows={3}
-          maxLength={MAX_CHARS}
-          className="w-full resize-none border-0 border-b border-rose-200 bg-transparent px-1 py-2 font-body text-rose-900 outline-none transition focus:border-rose-400"
-          placeholder="Escribe tu mensaje"
-        />
+        <div className="group relative">
+          <textarea
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value.slice(0, MAX_CHARS))}
+            rows={3}
+            maxLength={MAX_CHARS}
+            className="peer w-full resize-none border-0 border-b border-rose-200 bg-transparent px-1 py-2 font-body text-rose-900 outline-none"
+            placeholder="Write your message"
+          />
+          <span className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-rose-400 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] peer-focus:scale-x-100" />
+        </div>
         <p className="mb-5 mt-1 text-right font-body text-xs font-light text-rose-300">
           {mensaje.length}/{MAX_CHARS}
         </p>
@@ -339,12 +353,12 @@ export default function MessageWall() {
         />
         {preview ? (
           <div className="mb-5 flex items-center gap-3">
-            <div className="relative h-[120px] w-[120px] overflow-hidden rounded-xl border border-rose-200">
+            <div className="group relative h-[100px] w-[100px] overflow-hidden rounded-xl border border-rose-200 sm:h-[120px] sm:w-[120px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={preview}
-                alt="Vista previa"
-                className="h-full w-full object-cover"
+                alt="Preview"
+                className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
               />
               <button
                 type="button"
@@ -359,10 +373,10 @@ export default function MessageWall() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="mb-5 flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rose-300 bg-rose-50/40 px-4 py-6 font-body text-sm font-light text-rose-400 transition hover:bg-rose-50"
+            className="mb-5 flex min-h-32 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rose-300 bg-rose-50/40 px-4 py-6 font-body text-sm font-light text-rose-400 transition hover:bg-rose-50"
           >
             <ImagePlus size={22} strokeWidth={1.5} />
-            Agrega una foto (opcional)
+            Add a photo (optional)
           </button>
         )}
 
@@ -370,8 +384,8 @@ export default function MessageWall() {
         <div className="mb-6 flex gap-3">
           {(
             [
-              { value: "public", label: "Todos pueden verlo", Icon: Globe },
-              { value: "private", label: "Solo Mafer", Icon: Lock },
+              { value: "public", label: "Everyone can see it", Icon: Globe },
+              { value: "private", label: "Only Mafer", Icon: Lock },
             ] as const
           ).map((opt) => (
             <button
@@ -415,12 +429,12 @@ export default function MessageWall() {
           {sending ? (
             <>
               <Loader2 size={17} strokeWidth={1.5} className="animate-spin" />
-              Enviando...
+              Sending with love...
             </>
           ) : (
             <>
               <Send size={17} strokeWidth={1.5} />
-              Enviar mensaje
+              Send message
             </>
           )}
         </motion.button>
@@ -428,7 +442,7 @@ export default function MessageWall() {
 
       {/* --- Muro de mini-cartas --- */}
       {loading ? (
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 md:grid-cols-3">
           {[0, 1, 2].map((i) => (
             <div
               key={i}
@@ -440,10 +454,10 @@ export default function MessageWall() {
         </div>
       ) : messages.length === 0 ? (
         <p className="text-center font-body italic font-light text-rose-400/80">
-          Aún no hay mensajes. Sé la primera persona en escribir.
+          No messages yet. Be the first to write.
         </p>
       ) : (
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 md:grid-cols-3">
           {messages.map((msg, i) => (
             <MessageItem
               key={msg.id}
@@ -467,16 +481,24 @@ export default function MessageWall() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setLightbox(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-rose-950/40 p-6 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-rose-950/40 p-4 backdrop-blur-md sm:p-6"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <button
+              type="button"
+              onClick={() => setLightbox(null)}
+              aria-label="Close"
+              className="absolute right-4 top-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-transform hover:scale-110"
+            >
+              <X size={28} strokeWidth={1.5} />
+            </button>
             <motion.img
               src={lightbox}
-              alt="Foto del mensaje"
+              alt="Message photo"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="max-h-[85vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[85vh] max-w-[95vw] rounded-xl object-contain shadow-2xl"
             />
           </motion.div>
         )}
@@ -582,8 +604,8 @@ function MessageCard({
       >
         <ClosedEnvelope initial={initial} paper={PAPERS[2]} locked />
         <p className="mt-3 flex items-center justify-center gap-1.5 font-body text-xs font-light tracking-wide text-rose-400">
-          <Lock size={13} strokeWidth={1.5} />
-          Mensaje privado para Mafer
+          <ChainPadlock size={15} />
+          Private message for Mafer
         </p>
       </div>
     );
@@ -601,10 +623,10 @@ function MessageCard({
             e.stopPropagation();
             setConfirming(true);
           }}
-          aria-label="Eliminar mensaje"
-          className="absolute -right-2 -top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white/70 text-rose-500 opacity-70 shadow backdrop-blur-sm transition hover:bg-white hover:text-rose-600 hover:opacity-100"
+          aria-label="Delete message"
+          className="absolute -right-2 -top-2 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-white/80 text-rose-500 opacity-80 shadow backdrop-blur-sm transition hover:bg-white hover:text-rose-600 hover:opacity-100"
         >
-          <Trash2 size={15} strokeWidth={1.6} />
+          <Trash2 size={16} strokeWidth={1.6} />
         </button>
       )}
 
@@ -629,7 +651,7 @@ function MessageCard({
               className="w-full max-w-[220px] rounded-xl border border-rose-200 bg-white/95 p-4 text-center shadow-xl backdrop-blur"
             >
               <p className="mb-4 font-body text-sm text-rose-800">
-                ¿Eliminar este mensaje?
+                Delete this message?
               </p>
               <div className="flex gap-2">
                 <button
@@ -638,9 +660,9 @@ function MessageCard({
                     e.stopPropagation();
                     setConfirming(false);
                   }}
-                  className="flex-1 rounded-full border border-rose-200 bg-transparent px-3 py-2 font-body text-sm font-light text-rose-500 transition hover:bg-rose-50"
+                  className="flex-1 rounded-full border border-rose-200 bg-transparent px-3 py-2.5 font-body text-sm font-light text-rose-500 transition hover:bg-rose-50"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="button"
@@ -649,9 +671,9 @@ function MessageCard({
                     setConfirming(false);
                     onDelete(msg);
                   }}
-                  className="flex-1 rounded-full border border-rose-600 bg-rose-600 px-3 py-2 font-body text-sm font-light text-white transition hover:bg-rose-700"
+                  className="flex-1 rounded-full border border-rose-600 bg-rose-600 px-3 py-2.5 font-body text-sm font-light text-white transition hover:bg-rose-700"
                 >
-                  Eliminar
+                  Delete
                 </button>
               </div>
             </motion.div>
@@ -673,7 +695,7 @@ function MessageCard({
           >
             <ClosedEnvelope initial={initial} paper={paper} />
             <p className="mt-3 text-center font-body text-sm font-light tracking-wide text-rose-400">
-              De {msg.nombre}
+              From {msg.nombre}
             </p>
           </motion.div>
         ) : (
@@ -708,11 +730,11 @@ function MessageCard({
               {isPrivateForMafer && (
                 <span className="flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 font-body text-[10px] font-light uppercase tracking-wide text-rose-500">
                   <Lock size={10} strokeWidth={1.6} />
-                  privado
+                  private
                 </span>
               )}
             </div>
-            <p className="relative mt-2 whitespace-pre-wrap break-words font-display text-[#5f4636]">
+            <p className="relative mt-2 whitespace-pre-wrap break-words font-display text-[15px] text-[#5f4636] sm:text-base">
               {msg.mensaje}
             </p>
             {msg.foto_url && (
@@ -727,8 +749,9 @@ function MessageCard({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={msg.foto_url}
-                  alt={`Foto de ${msg.nombre}`}
-                  className="max-h-[200px] w-full object-cover"
+                  alt={`Photo from ${msg.nombre}`}
+                  loading="lazy"
+                  className="max-h-40 w-full object-cover sm:max-h-[200px]"
                 />
               </button>
             )}
@@ -803,8 +826,38 @@ function ClosedEnvelope({
           background: "radial-gradient(circle at 38% 34%, #E8829F, #C04870)",
         }}
       >
-        {locked ? <Lock size={16} strokeWidth={1.6} /> : initial}
+        {locked ? <ChainPadlock size={20} className="text-white" /> : initial}
       </span>
     </div>
+  );
+}
+
+// --- Candado fino con cadena delicada (para mensajes privados) ---
+function ChainPadlock({ size = 16, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* eslabones de cadena delicada */}
+      <circle cx="5" cy="5" r="1.5" opacity="0.7" />
+      <circle cx="9" cy="3.4" r="1.5" opacity="0.7" />
+      <circle cx="13" cy="3.4" r="1.5" opacity="0.7" />
+      <circle cx="17.5" cy="5.2" r="1.5" opacity="0.7" />
+      {/* arco del candado */}
+      <path d="M9 14v-2.2a3 3 0 0 1 6 0V14" />
+      {/* cuerpo */}
+      <rect x="7.5" y="14" width="9" height="7" rx="1.8" />
+      {/* ojo de la cerradura */}
+      <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+      <path d="M12 18v1.4" />
+    </svg>
   );
 }
