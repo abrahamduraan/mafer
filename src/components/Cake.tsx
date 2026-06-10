@@ -197,11 +197,15 @@ export default function Cake() {
               filter: "blur(18px)",
             }}
           />
-          {/* el número: line-height holgado + padding para que el script no se corte */}
+          {/* el número: line-height holgado + padding para que el script no se
+              corte. El font script italic tiene bearing asimétrico (se ve corrido
+              a la derecha), así que lo compensamos con un nudge en em (escala con
+              el tamaño en mobile y desktop) para centrarlo entre los laureles. */}
           <span
             className="shimmer-gold-deep font-script block px-3 pb-2 text-center text-[4.6rem] leading-[1.18] sm:text-[6rem]"
             style={{
               filter: "drop-shadow(0 3px 6px rgba(157,23,77,0.32))",
+              transform: "translateX(-0.05em)",
             }}
           >
             {count}
