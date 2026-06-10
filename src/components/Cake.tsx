@@ -200,15 +200,23 @@ export default function Cake() {
           {/* el número: line-height holgado + padding para que el script no se
               corte. El font script italic tiene bearing asimétrico (se ve corrido
               a la derecha), así que lo compensamos con un nudge en em (escala con
-              el tamaño en mobile y desktop) para centrarlo entre los laureles. */}
+              el tamaño en mobile y desktop) para centrarlo entre los laureles.
+              Reservamos el ancho del valor final ("27") con un placeholder
+              invisible en la misma celda de grid: así el contador (1 dígito → 2
+              dígitos) queda siempre centrado en el mismo ancho y NO se desplaza de
+              izquierda a derecha en mobile mientras cuenta. */}
           <span
-            className="shimmer-gold-deep font-script block px-3 pb-2 text-center text-[4.6rem] leading-[1.18] sm:text-[6rem]"
+            className="shimmer-gold-deep font-script grid px-3 pb-2 text-center text-[4.6rem] leading-[1.18] sm:text-[6rem]"
             style={{
               filter: "drop-shadow(0 3px 6px rgba(157,23,77,0.32))",
               transform: "translateX(-0.05em)",
+              fontVariantNumeric: "tabular-nums",
             }}
           >
-            {count}
+            <span aria-hidden className="invisible [grid-area:1/1]">
+              27
+            </span>
+            <span className="justify-self-center [grid-area:1/1]">{count}</span>
           </span>
         </div>
 
