@@ -376,6 +376,18 @@ video {
   animation: shimmer 5s linear infinite;
 }
 
+/* iOS Safari renderiza mal el background-clip:text con background-position
+   animado: en dispositivos táctiles el texto parece desplazarse en horizontal
+   como una marquesina. En esos dispositivos congelamos el barrido y dejamos el
+   degradado dorado estático (el efecto animado se conserva en desktop). */
+@media (hover: none) and (pointer: coarse) {
+  .shimmer-gold,
+  .shimmer-gold-deep {
+    animation: none;
+    background-position: 50% center;
+  }
+}
+
 /* Tracking generoso para titulares editoriales */
 .tracking-editorial { letter-spacing: 0.045em; }
 
