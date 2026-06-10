@@ -29,3 +29,9 @@ export interface GalleryPhoto {
   position: number;
   created_at: string;
 }
+
+export interface LetterContent {
+  id: number;
+  content: string;
+  updated_at: string;
+}

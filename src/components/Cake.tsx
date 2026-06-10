@@ -153,13 +153,17 @@ export default function Cake() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex w-full flex-col items-center justify-center px-5 py-16 sm:py-24"
+      className="relative flex w-full flex-col items-center justify-center px-6 py-16 text-center sm:py-24"
     >
       {/* Fuegos artificiales al completar el soplido */}
       <Fireworks trigger={wished} duration={3500} />
 
       {/* Pétalos de rosa cayendo */}
       <AnimatePresence>{petals && <PetalFall />}</AnimatePresence>
+
+      {/* Columna central acotada y autocentrada (independiente del ancho del
+          padre) → garantiza que todo quede equidistante de ambos bordes. */}
+      <div className="mx-auto flex w-full max-w-xl flex-col items-center text-center">
 
       {/* Encabezado */}
       <motion.p
@@ -195,10 +199,9 @@ export default function Cake() {
           />
           {/* el número: line-height holgado + padding para que el script no se corte */}
           <span
-            className="shimmer-gold-deep font-script block px-3 pb-2 text-[4.6rem] leading-[1.18] sm:text-[6rem]"
+            className="shimmer-gold-deep font-script block px-3 pb-2 text-center text-[4.6rem] leading-[1.18] sm:text-[6rem]"
             style={{
               filter: "drop-shadow(0 3px 6px rgba(157,23,77,0.32))",
-              transform: "translateX(0.06em)",
             }}
           >
             {count}
@@ -214,7 +217,7 @@ export default function Cake() {
         onMouseMove={onMove}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={onLeave}
-        className={`relative my-8 w-[min(85vw,500px)] ${
+        className={`relative mx-auto my-8 w-[min(85%,500px)] ${
           isMafer && !isBlown ? "cursor-pointer" : ""
         }`}
         initial={{ opacity: 0, scale: 0.85, y: 60 }}
@@ -332,6 +335,7 @@ export default function Cake() {
           )}
         </AnimatePresence>
       )}
+      </div>
     </section>
   );
 }
